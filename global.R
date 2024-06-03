@@ -1,4 +1,5 @@
 library(dplyr)
+library(htmlwidgets)
 library(leaflet)
 library(leaflet.extras)
 library(sf)
@@ -6,7 +7,6 @@ library(shiny)
 
 counties <- st_read("data/counties.shp") 
 drive <- st_read("data/drive.shp") 
-st_write("data/data/drive.shp")
 dnr <- st_read("data/dnr.shp") 
 nps <- st_read("data/nps.shp") 
 fws <- st_read("data/fws.shp")
@@ -15,7 +15,8 @@ golf <- st_read("data/golf.shp")
 dnr$DESIG <- factor(dnr$DESIG,
                     levels = c("SP", "SF", "NRMA", "WMA", "NEA"))
 
-locparks <- st_read("data/local_parks.shp")
+locparks <- st_read("data/local_parks.shp") %>%
+  filter(!is.na(PARK_NAME))
 
 # list.files("data/local_parks", pattern = ".shp$", full.names = FALSE)
 # 

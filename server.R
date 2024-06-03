@@ -10,20 +10,25 @@ server <- function(input, output, session) {
                        domain = dnr$DESIG)
     
     leaflet(options = leafletOptions(zoomSnap = 0.25, zoomDelta = 0.25)) %>%
-      addProviderTiles("CartoDB.Positron") %>%
+      addProviderTiles("CartoDB.Positron", group = "Neutral Basemap") %>%
+      addProviderTiles("OpenStreetMap.Mapnik", group = "Color Basemap") %>%
       addResetMapButton() %>%
+      addSearchOSM(options = searchOptions(collapsed = TRUE,
+                                           position = "topleft")) %>%
       setView(-77.25, 38.85, zoom = 8.5) %>%
       addMapPane("drive", zIndex = 410) %>%
       addMapPane("counties", zIndex = 414) %>%
       addMapPane("parks", zIndex = 415) %>%
       addMapPane("points", zIndex = 416) %>%
-      addLayersControl(overlayGroups = c("Counties", 
-                                         "90-Minute Drive (JHSPH)",
-                                         "MD DNR Land",
-                                         "US NPS Land",
-                                         "US FWS Land",
-                                         "Local Parks",
-                                         "Golf Courses"),
+      addLayersControl(baseGroups = c("Neutral Basemap", 
+                                      "Color Basemap"),
+                       overlayGroups = c("Counties", 
+                                         "90-Minute Drive from JHSPH",
+                                         "State Department of Natural Resources Land",
+                                         "US National Park Service Land",
+                                         "US Fish and Wildlife Service Land",
+                                         "Golf Courses",
+                                         "Local Parks"),
                        options = layersControlOptions(collapsed = FALSE)) %>%
       addPolygons(data = counties,
                   label = ~NAMELSAD,
@@ -52,16 +57,16 @@ server <- function(input, output, session) {
                     style = list("font-weight" = "normal", padding = "3px 8px"),
                     textsize = "14px",
                     direction = "auto"),
-                  group = "90-Minute Drive (JHSPH)",
+                  group = "90-Minute Drive from JHSPH",
                   options = pathOptions(pane = "drive")) %>%
       addPolygons(data = dnr, 
                   label = ~DNRNAME,
                   color = "#4E4E4E",
                   stroke = TRUE,
-                  weight = 0.75,
+                  weight = 1.00,
                   smoothFactor = 1,
                   opacity = 1.0,
-                  fillOpacity = 0.85,
+                  fillOpacity = 0.90,
                   fillColor = ~pal(DESIG),
                   highlightOptions = highlightOptions(color = "#4E4E4E", 
                                                       weight = 3.0,
@@ -70,31 +75,34 @@ server <- function(input, output, session) {
                     style = list("font-weight" = "normal", padding = "3px 8px"),
                     textsize = "14px",
                     direction = "auto"),
-                  group = "MD DNR Land",
+                  group = "State Department of Natural Resources Land",
                   options = pathOptions(pane = "parks")) %>%
       addLegend(position = "topright",
                 colors = c("#B4D79E",
                            "#5C8944",
                            "#D79E9E",
                            "#FFFFBE",
-                           "#C29ED7"),
+                           "#C29ED7",
+                           "#9EBBD7",
+                           "#D7C29E"),
                 labels = c("State Park",
                            "State Forest",
-                           "Natural Resources Management Area",
-                           "Wildlife Management Area",
-                           "Natural Environment Area"),
+                           "State Natural Resources Management Area",
+                           "State Wildlife Management Area",
+                           "State Natural Environment Area",
+                           "US National Park Service Land",
+                           "US Fish and Wildlife Service Land"),
                 opacity = 1,
-                group = "MD DNR Land",
-                title = "MD DNR Land"
+                title = "Legend"
       ) %>%
       addPolygons(data = nps, 
                   label = ~UNIT_NAME,
                   color = "#4E4E4E",
                   stroke = TRUE,
-                  weight = 0.75,
+                  weight = 1.0,
                   smoothFactor = 1,
                   opacity = 1.0,
-                  fillOpacity = 0.85,
+                  fillOpacity = 0.90,
                   fillColor = "#9EBBD7",
                   highlightOptions = highlightOptions(color = "#4E4E4E", 
                                                       weight = 3.0,
@@ -103,22 +111,16 @@ server <- function(input, output, session) {
                     style = list("font-weight" = "normal", padding = "3px 8px"),
                     textsize = "14px",
                     direction = "auto"),
-                  group = "US NPS Land",
+                  group = "US National Park Service Land",
                   options = pathOptions(pane = "parks")) %>%
-      addLegend(position = "topright",
-                colors = c("#9EBBD7"),
-                labels = c("US NPS Land"),
-                opacity = 1,
-                group = "US NPS Land"
-      ) %>%
       addPolygons(data = fws, 
                   label = ~ORGNAME,
                   color = "#4E4E4E",
                   stroke = TRUE,
-                  weight = 0.75,
+                  weight = 1.0,
                   smoothFactor = 1,
                   opacity = 1.0,
-                  fillOpacity = 0.85,
+                  fillOpacity = 0.90,
                   fillColor = "#D7C29E",
                   highlightOptions = highlightOptions(color = "#4E4E4E", 
                                                       weight = 3.0,
@@ -127,14 +129,8 @@ server <- function(input, output, session) {
                     style = list("font-weight" = "normal", padding = "3px 8px"),
                     textsize = "14px",
                     direction = "auto"),
-                  group = "US FWS Land",
+                  group = "US Fish and Wildlife Service Land",
                   options = pathOptions(pane = "parks")) %>%
-      addLegend(position = "topright",
-                colors = c("#D7C29E"),
-                labels = c("US FWS Land"),
-                opacity = 1,
-                group = "US FWS Land"
-      ) %>%
       addCircleMarkers(data = golf,
                        label = ~Title,
                        radius = 3,
@@ -154,7 +150,7 @@ server <- function(input, output, session) {
                        radius = 3,
                        color = "#000000",
                        fillColor = "#66ff00",
-                       weight = 1,
+                       weight = 1.5,
                        opacity = 1,
                        fillOpacity = 1,
                        labelOptions = labelOptions(
@@ -163,7 +159,7 @@ server <- function(input, output, session) {
                          direction = "auto"),
                        group = "Local Parks",
                        options = pathOptions(pane = "points")) %>%
-      hideGroup(c("Golf Courses", "Local Parks"))
+      hideGroup(c("Local Parks")) 
     
   })
   
