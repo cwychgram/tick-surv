@@ -1,3 +1,7 @@
+* {
+  font-size: 14px !important;
+}
+
 .container-fluid {
     padding-right: 0px;
     padding-left: 0px;
@@ -7,4 +11,8 @@
 
 path.leaflet-interactive[stroke = "#3388ff"] {
   display: none;
+}
+
+.leaflet-control-layers label {
+  font-weight: normal;
 }

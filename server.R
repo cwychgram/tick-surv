@@ -2,6 +2,57 @@ server <- function(input, output, session) {
   
   output$map <- renderLeaflet({
     
+    lyme_popup <- paste(
+      counties$NAMELSAD,
+      "<br>",
+      "Incidence per 100,000: ", counties$INCIDENCE, 
+      "<br>",
+      "Cases: ", counties$CASES,
+      sep = "") %>%
+      lapply(htmltools::HTML) 
+    
+    # lyme_bins <- dput(getJenksBreaks(counties$INCIDENCE, 6, subset = NULL))
+    lyme_pal <-  colorQuantile(palette = "YlOrBr",
+                          domain = counties$INCIDENCE,
+                          n = 5)
+    
+    shapes <- c("circle", 
+                "circle", 
+                "rect",
+                "rect",
+                "rect",
+                "rect",
+                "rect",
+                "rect",
+                "rect")
+    
+    symbols <- setNames(Map(f = makeSymbol,
+                            shape = shapes,
+                            fillColor = c("#66ff00",
+                                          "#000000",
+                                          "#B4D79E",
+                                          "#5C8944",
+                                          "#D79E9E",
+                                          "#FFFFBE",
+                                          "#C29ED7",
+                                          "#9EBBD7",
+                                          "#D7C29E"),
+                            color = c("#000000", 
+                                      "#000000", 
+                                      "#4E4E4E",
+                                      "#4E4E4E",
+                                      "#4E4E4E",
+                                      "#4E4E4E",
+                                      "#4E4E4E",
+                                      "#4E4E4E",
+                                      "#4E4E4E"),
+                            opacity = 1.0,
+                            fillOpacity = 1.0,
+                            height = 24,
+                            width = 24,
+                            "stroke-width" = 1.0), 
+                        shapes)
+    
     pal <- colorFactor(palette = c("#B4D79E",
                                    "#5C8944",
                                    "#D79E9E",
@@ -18,8 +69,9 @@ server <- function(input, output, session) {
       setView(-77.25, 38.85, zoom = 8.5) %>%
       addMapPane("drive", zIndex = 410) %>%
       addMapPane("counties", zIndex = 414) %>%
-      addMapPane("parks", zIndex = 415) %>%
-      addMapPane("points", zIndex = 416) %>%
+      addMapPane("lyme", zIndex = 415) %>%
+      addMapPane("parks", zIndex = 416) %>%
+      addMapPane("points", zIndex = 417) %>%
       addLayersControl(baseGroups = c("Neutral Basemap", 
                                       "Color Basemap"),
                        overlayGroups = c("Counties", 
@@ -28,8 +80,16 @@ server <- function(input, output, session) {
                                          "US National Park Service Land",
                                          "US Fish and Wildlife Service Land",
                                          "Golf Courses",
-                                         "Local Parks"),
+                                         "Local Parks",
+                                         "Lyme Disease Incidence (2022)",
+                                         "Distance to Forest Edge (~10 second wait)",
+                                         "Distance to Water (~10 second wait)"),
                        options = layersControlOptions(collapsed = FALSE)) %>%
+      htmlwidgets::onRender("
+        function() {
+            $('.leaflet-control-layers-base').prepend('<label style=\"font-weight: bold\">Layer Control</label>');
+        }
+    ") %>%
       addPolygons(data = counties,
                   label = ~NAMELSAD,
                   color = "#4E4E4E",
@@ -77,24 +137,6 @@ server <- function(input, output, session) {
                     direction = "auto"),
                   group = "State Department of Natural Resources Land",
                   options = pathOptions(pane = "parks")) %>%
-      addLegend(position = "topright",
-                colors = c("#B4D79E",
-                           "#5C8944",
-                           "#D79E9E",
-                           "#FFFFBE",
-                           "#C29ED7",
-                           "#9EBBD7",
-                           "#D7C29E"),
-                labels = c("State Park",
-                           "State Forest",
-                           "State Natural Resources Management Area",
-                           "State Wildlife Management Area",
-                           "State Natural Environment Area",
-                           "US National Park Service Land",
-                           "US Fish and Wildlife Service Land"),
-                opacity = 1,
-                title = "Legend"
-      ) %>%
       addPolygons(data = nps, 
                   label = ~UNIT_NAME,
                   color = "#4E4E4E",
@@ -159,8 +201,109 @@ server <- function(input, output, session) {
                          direction = "auto"),
                        group = "Local Parks",
                        options = pathOptions(pane = "points")) %>%
-      hideGroup(c("Local Parks")) 
+      hideGroup(c("Local Parks", 
+                  "Distance to Forest Edge (~10 second wait)",
+                  "Distance to Water (~10 second wait)",
+                  "Lyme Disease Incidence (2022)")) %>%
+      addLegendImage(
+        images = symbols,
+        labels = c("Local Park",
+                   "Golf Course",
+                   "State Park",
+                   "State Forest",
+                   "State Natural Resources Management Area",
+                   "State Wildlife Management Area",
+                   "State Natural Environment Area",
+                   "US National Park Service Land",
+                   "US Fish and Wildlife Service Land"),
+        width = 10,
+        height = 10,
+        orientation = "vertical",
+        title = htmltools::tags$div("Legend",
+                                    style = 'font-weight: bold; text-align: left;'),
+        position = "topright"
+      ) %>%
+      addPolygons(data = counties,
+                  label = ~lyme_popup,
+                  color = "#4E4E4E",
+                  stroke = TRUE,
+                  weight = 2.0,
+                  smoothFactor = 1,
+                  opacity = 1.0,
+                  fillOpacity = 0.75,
+                  fillColor = ~lyme_pal(INCIDENCE),
+                  labelOptions = labelOptions(
+                    style = list("font-weight" = "normal", padding = "3px 8px"),
+                    textsize = "14px",
+                    direction = "auto"),
+                  group = "Lyme Disease Incidence (2022)",
+                  options = pathOptions(pane = "lyme"))
     
+  })
+  
+  observe({
+    selected_groups <- req(input$map_groups)
+    if ("Lyme Disease Incidence (2022)" %in% selected_groups) {
+      lyme_pal <-  colorQuantile(palette = "YlOrBr",
+                                 domain = counties$INCIDENCE,
+                                 n = 5)
+      leafletProxy("map") %>%
+        removeControl(layerId = "lyme_legend") %>%
+        addLegend(position = "topleft",
+                  pal = lyme_pal,
+                  values = counties$INCIDENCE,
+                  title = "Lyme Disease Incidence (2022)",
+                  opacity = 0.75,
+                  group = "Lyme Disease Incidence (2022)",
+                  layerId = "lyme_legend"
+        ) 
+    }
+    if ("Distance to Forest Edge (~10 second wait)" %in% selected_groups) {
+      if (!exists("d2fe")) {
+        d2fe <- read_stars("data/distance_to_forest_edge_3857.tif")
+        assign("d2fe", d2fe, envir = .GlobalEnv)
+      } 
+      pal_d2fe <- colorNumeric(palette = "viridis",
+                               na.color = "transparent",
+                               domain = d2fe$distance_to_forest_edge_3857.tif,
+                               reverse = TRUE)
+      leafletProxy("map") %>%
+        removeControl(layerId = "d2fe_legend") %>%
+        addStarsImage(d2fe,
+                      # project = FALSE,
+                      colors = pal_d2fe,
+                      group = "Distance to Forest Edge (~10 second wait)") %>%
+        addLegend(position = "topleft",
+                  pal = pal_d2fe,
+                  values = d2fe$distance_to_forest_edge_3857.tif,
+                  opacity = 1,
+                  title = "Distance to Forest Edge (m)",
+                  group = "Distance to Forest Edge (~10 second wait)",
+                  layerId = "d2fe_legend")
+    } 
+    if ("Distance to Water (~10 second wait)" %in% selected_groups) {
+      if (!exists("d2w")) {
+        d2w <- read_stars("data/distance_to_water_3857.tif")
+        assign("d2w", d2w, envir = .GlobalEnv)
+      } 
+      pal_d2w <- colorNumeric(palette = "viridis",
+                               na.color = "transparent",
+                               domain = d2w$distance_to_water_3857.tif,
+                               reverse = TRUE)
+      leafletProxy("map") %>%
+        removeControl(layerId = "d2w_legend") %>%
+        addStarsImage(d2w,
+                      # project = FALSE,
+                      colors = pal_d2w,
+                      group = "Distance to Water (~10 second wait)") %>%
+        addLegend(position = "topleft",
+                  pal = pal_d2w,
+                  values = d2w$distance_to_water_3857.tif,
+                  opacity = 1,
+                  title = "Distance to Water (m)",
+                  group = "Distance to Water (~10 second wait)",
+                  layerId = "d2w_legend")
+    } 
   })
   
 }

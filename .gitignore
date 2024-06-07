@@ -3,4 +3,7 @@
 .RData
 .Ruserdata
 data/archive
-data/local_parks
+data/roads
+data/water
+rsconnect
+tick-surv.Rproj

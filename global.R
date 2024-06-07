@@ -1,11 +1,20 @@
 library(dplyr)
+library(htmltools)
 library(htmlwidgets)
+library(leafem)
+library(leaflegend)
 library(leaflet)
 library(leaflet.extras)
+# library(raster)
 library(sf)
 library(shiny)
+library(stars)
 
 counties <- st_read("data/counties.shp") 
+counties$NAMELSAD[counties$NAMELSAD == "Baltimore city"] <- "Baltimore City"
+lyme <- read.csv("data/county_lyme.csv")
+counties <- counties %>%
+  left_join(lyme, by = "NAMELSAD")
 drive <- st_read("data/drive.shp") 
 dnr <- st_read("data/dnr.shp") 
 nps <- st_read("data/nps.shp") 
