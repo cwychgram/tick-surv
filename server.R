@@ -83,7 +83,8 @@ server <- function(input, output, session) {
                                          "Local Parks",
                                          "Lyme Disease Incidence (2022)",
                                          "Distance to Forest Edge (~10 second wait)",
-                                         "Distance to Water (~10 second wait)"),
+                                         "Distance to Water (~10 second wait)",
+                                         "Distance to Road (~10 second wait)"),
                        options = layersControlOptions(collapsed = FALSE)) %>%
       htmlwidgets::onRender("
         function() {
@@ -204,6 +205,7 @@ server <- function(input, output, session) {
       hideGroup(c("Local Parks", 
                   "Distance to Forest Edge (~10 second wait)",
                   "Distance to Water (~10 second wait)",
+                  "Distance to Road (~10 second wait)",
                   "Lyme Disease Incidence (2022)")) %>%
       addLegendImage(
         images = symbols,
@@ -303,7 +305,30 @@ server <- function(input, output, session) {
                   title = "Distance to Water (m)",
                   group = "Distance to Water (~10 second wait)",
                   layerId = "d2w_legend")
-    } 
+    }
+    if ("Distance to Road (~10 second wait)" %in% selected_groups) {
+      if (!exists("d2r")) {
+        d2r <- read_stars("data/distance_to_roads_3857.tif")
+        assign("d2r", d2r, envir = .GlobalEnv)
+      } 
+      pal_d2r <- colorNumeric(palette = "viridis",
+                              na.color = "transparent",
+                              domain = d2r$distance_to_roads_3857.tif,
+                              reverse = TRUE)
+      leafletProxy("map") %>%
+        removeControl(layerId = "d2r_legend") %>%
+        addStarsImage(d2r,
+                      # project = FALSE,
+                      colors = pal_d2r,
+                      group = "Distance to Road (~10 second wait)") %>%
+        addLegend(position = "topleft",
+                  pal = pal_d2r,
+                  values = d2r$distance_to_roads_3857.tif,
+                  opacity = 1,
+                  title = "Distance to Road (m)",
+                  group = "Distance to Road (~10 second wait)",
+                  layerId = "d2r_legend")
+    }
   })
   
 }
