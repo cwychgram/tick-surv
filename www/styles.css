@@ -16,3 +16,33 @@ path.leaflet-interactive[stroke = "#3388ff"] {
 .leaflet-control-layers label {
   font-weight: normal;
 }
+
+#panel {
+  background-color: white;
+  padding: 6px 10px 6px 6px;
+  border: 2px solid rgba(0,0,0,0.2);
+  background-clip: padding-box;
+  border-radius: 5px;
+  max-width: 280px;
+  max-height: 485px;
+}
+
+.checkbox, .radio {
+  margin-top: 0px;
+  margin-bottom: 0px;
+}
+
+#close_btn {
+ z-index: 1000;
+ position: absolute;
+ top: 20px;
+ right: 20px;
+}
+
+.form-group {
+  margin-bottom: 5px;
+}
+
+.leaflet-control-search .search-tip {
+  text-wrap: wrap;
+}

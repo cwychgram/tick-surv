@@ -5,10 +5,16 @@ library(leafem)
 library(leaflegend)
 library(leaflet)
 library(leaflet.extras)
-# library(raster)
 library(sf)
 library(shiny)
+library(shinyjs)
+library(shinyWidgets)
 library(stars)
+
+rm(d2fe)
+rm(d2w)
+rm(d2r)
+rm(elev)
 
 counties <- st_read("data/counties.shp") 
 counties$NAMELSAD[counties$NAMELSAD == "Baltimore city"] <- "Baltimore City"
