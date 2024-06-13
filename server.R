@@ -1,56 +1,57 @@
 server <- function(input, output, session) {
   
+  shapes <- c("circle", 
+              "circle", 
+              "rect",
+              "rect",
+              "rect",
+              "rect",
+              "rect",
+              "rect",
+              "rect")
+  
+  symbols <- setNames(Map(f = makeSymbol,
+                          shape = shapes,
+                          fillColor = c("#66ff00",
+                                        "#000000",
+                                        "#B4D79E",
+                                        "#5C8944",
+                                        "#D79E9E",
+                                        "#FFFFBE",
+                                        "#C29ED7",
+                                        "#9EBBD7",
+                                        "#D7C29E"),
+                          color = c("#000000", 
+                                    "#000000", 
+                                    "#4E4E4E",
+                                    "#4E4E4E",
+                                    "#4E4E4E",
+                                    "#4E4E4E",
+                                    "#4E4E4E",
+                                    "#4E4E4E",
+                                    "#4E4E4E"),
+                          opacity = 1.0,
+                          fillOpacity = 1.0,
+                          height = 24,
+                          width = 24,
+                          "stroke-width" = 1.0), 
+                      shapes)
+  
+  pal <- colorFactor(palette = c("#B4D79E",
+                                 "#5C8944",
+                                 "#D79E9E",
+                                 "#FFFFBE",
+                                 "#C29ED7"),
+                     domain = dnr$DESIG)
+  
   output$map <- renderLeaflet({
-    
-    shapes <- c("circle", 
-                "circle", 
-                "rect",
-                "rect",
-                "rect",
-                "rect",
-                "rect",
-                "rect",
-                "rect")
-    
-    symbols <- setNames(Map(f = makeSymbol,
-                            shape = shapes,
-                            fillColor = c("#66ff00",
-                                          "#000000",
-                                          "#B4D79E",
-                                          "#5C8944",
-                                          "#D79E9E",
-                                          "#FFFFBE",
-                                          "#C29ED7",
-                                          "#9EBBD7",
-                                          "#D7C29E"),
-                            color = c("#000000", 
-                                      "#000000", 
-                                      "#4E4E4E",
-                                      "#4E4E4E",
-                                      "#4E4E4E",
-                                      "#4E4E4E",
-                                      "#4E4E4E",
-                                      "#4E4E4E",
-                                      "#4E4E4E"),
-                            opacity = 1.0,
-                            fillOpacity = 1.0,
-                            height = 24,
-                            width = 24,
-                            "stroke-width" = 1.0), 
-                        shapes)
-    
-    pal <- colorFactor(palette = c("#B4D79E",
-                                   "#5C8944",
-                                   "#D79E9E",
-                                   "#FFFFBE",
-                                   "#C29ED7"),
-                       domain = dnr$DESIG)
     
     leaflet(options = leafletOptions(zoomSnap = 0.25, zoomDelta = 0.25)) %>%
       addResetMapButton() %>%
       addSearchOSM(options = searchOptions(collapsed = TRUE,
                                            position = "topleft")) %>%
       setView(-77.25, 38.85, zoom = 8.5) %>%
+      addScaleBar(position = "bottomright") %>%
       addMapPane("basemap", zIndex = 0) %>%
       addMapPane("drive", zIndex = 410) %>%
       addMapPane("counties", zIndex = 414) %>%
@@ -68,6 +69,7 @@ server <- function(input, output, session) {
                    "State Natural Environment Area",
                    "US National Park Service Land",
                    "US Fish and Wildlife Service Land"),
+        layerId = "parks_legend",
         width = 10,
         height = 10,
         orientation = "vertical",
@@ -540,6 +542,40 @@ server <- function(input, output, session) {
       leafletProxy("map", session) %>%
         hideGroup("Elevation") %>%
         removeControl(layerId = "elev_legend")
+    }
+    
+  })
+  
+  observe({
+    
+    if (input$locparks == FALSE &
+        input$golf == FALSE &
+        input$dnr == FALSE &
+        input$nps == FALSE &
+        input$fws == FALSE) {
+      leafletProxy("map", session) %>%
+        removeControl(layerId = "parks_legend")
+    } else {
+      leafletProxy("map", session) %>%
+        addLegendImage(
+          images = symbols,
+          labels = c("Local Park",
+                     "Golf Course",
+                     "State Park",
+                     "State Forest",
+                     "State Natural Resources Management Area",
+                     "State Wildlife Management Area",
+                     "State Natural Environment Area",
+                     "US National Park Service Land",
+                     "US Fish and Wildlife Service Land"),
+          layerId = "parks_legend",
+          width = 10,
+          height = 10,
+          orientation = "vertical",
+          title = htmltools::tags$div("Legend",
+                                      style = 'font-weight: bold; text-align: left;'),
+          position = "bottomleft"
+        )
     }
     
   })
