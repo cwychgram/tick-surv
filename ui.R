@@ -17,19 +17,19 @@ ui <- fluidPage(
                 span(tags$u("Study Area Features")),
                 checkboxInput("counties", "Counties", TRUE),
                 checkboxInput("drive", "90-Minute Drive from JHSPH", TRUE),
-                checkboxInput("dnr", "State Dept. of Natural Resources Land", TRUE),
+                checkboxInput("dnr", "State Department of Natural Resources Land", TRUE),
                 checkboxInput("nps", "US National Park Service Land", TRUE),
                 checkboxInput("fws", "US Fish and Wildlife Service Land", TRUE),
                 checkboxInput("golf", "Golf Courses", TRUE),
                 checkboxInput("locparks", "Local Parks", FALSE),
                 span(tags$u("Tickborne Diseases-Related Layers")),
                 br(),
-                span(tags$i("Please allow ~10 seconds for initial loading of landscape layers and turn off other layers to view.")),
+                # span(tags$i("Please allow ~10 seconds for initial loading of landscape layers and turn off other layers to view.")),
                 checkboxInput("lyme", "Lyme Disease Incidence (2022)", FALSE),
                 checkboxInput("d2fe", "Distance to Forest Edge", FALSE),
                 checkboxInput("d2w", "Distance to Water", FALSE),
                 checkboxInput("d2r", "Distance to Road", FALSE),
                 checkboxInput("elev", "Elevation", FALSE),
-                checkboxInput("lulc", "Land Use/Land Cover (CBP)", FALSE)
+                checkboxInput("lulc", tags$div("Land Use/Land Cover (", tags$a(href = "https://www.chesapeakeconservancy.org/conservation-innovation-center/high-resolution-data/lulc-data-project-2022/", "Chesapeake Bay Program", target = "_blank"), ")"), FALSE)
   )
 )
