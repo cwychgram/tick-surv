@@ -4,7 +4,7 @@ ui <- fluidPage(
   leafletOutput("map",
                 width = "100%",
                 height = "100vh"),
-  absolutePanel(id = "panel", top = 10, right = 10, fixed = TRUE, draggable = TRUE,
+  absolutePanel(id = "panel", top = 10, right = 10, fixed = TRUE, draggable = FALSE,
                 span(tags$b("Layer Control")),
                 hr(style = "height: 0; border-top: 1px solid #ddd; margin-top: 5px; margin-bottom: 5px;"),
                 span(style = "margin-bottom: 5px; text-decoration: underline;", "Basemaps"),

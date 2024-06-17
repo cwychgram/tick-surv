@@ -37,12 +37,14 @@ server <- function(input, output, session) {
                           "stroke-width" = 1.0), 
                       shapes)
   
-  pal <- colorFactor(palette = c("#B4D79E",
-                                 "#5C8944",
-                                 "#D79E9E",
-                                 "#FFFFBE",
-                                 "#C29ED7"),
-                     domain = dnr$DESIG)
+  pal_dnr <- colorFactor(palette = c("#B4D79E",
+                                     "#5C8944",
+                                     "#D79E9E",
+                                     "#FFFFBE",
+                                     "#C29ED7"),
+                         domain = dnr$DESIG)
+  
+  assign("pal_dnr", pal_dnr, envir = .GlobalEnv)
   
   output$map <- renderLeaflet({
     
@@ -76,7 +78,7 @@ server <- function(input, output, session) {
         title = htmltools::tags$div("Legend",
                                     style = 'font-weight: bold; text-align: left;'),
         position = "bottomleft"
-      )
+      ) 
   })
   
   observe({
@@ -149,14 +151,7 @@ server <- function(input, output, session) {
   observe({
     
     if (input$dnr == TRUE) {
-      
-      pal <- colorFactor(palette = c("#B4D79E",
-                                     "#5C8944",
-                                     "#D79E9E",
-                                     "#FFFFBE",
-                                     "#C29ED7"),
-                         domain = dnr$DESIG)
-      
+  
       leafletProxy("map", session) %>%
         addPolygons(data = dnr,
                     label = ~DNRNAME,
@@ -166,7 +161,7 @@ server <- function(input, output, session) {
                     smoothFactor = 1,
                     opacity = 1.0,
                     fillOpacity = 0.90,
-                    fillColor = ~pal(DESIG),
+                    fillColor = ~pal_dnr(DESIG),
                     highlightOptions = highlightOptions(color = "#4E4E4E",
                                                         weight = 3.0,
                                                         bringToFront = TRUE),
@@ -342,16 +337,23 @@ server <- function(input, output, session) {
     
   })
   
+  d2fe_env <- new.env()
+  d2w_env <- new.env()
+  d2r_env <- new.env()
+  elev_env <- new.env()
+  
   observe({
     
     if (input$d2fe == TRUE) {
       
-      if (!exists("d2fe")) {
+      if (!exists("d2fe", envir = d2fe_env)) {
+        
         d2fe <- read_stars("data/distance_to_forest_edge_3857.tif")
         
         pal_d2fe <- colorNumeric(palette = "viridis",
                                  na.color = "transparent",
-                                 domain = d2fe$distance_to_forest_edge_3857.tif,
+                                 # domain = d2fe$distance_to_forest_edge_3857.tif,
+                                 domain = 0:864,
                                  reverse = TRUE)
         leafletProxy("map", session) %>%
           addStarsImage(d2fe,
@@ -360,26 +362,27 @@ server <- function(input, output, session) {
           showGroup("Distance to Forest Edge") %>%
           addLegend(position = "topleft",
                     pal = pal_d2fe,
-                    values = d2fe$distance_to_forest_edge_3857.tif,
+                    # values = d2fe$distance_to_forest_edge_3857.tif,
+                    values = 0:864,
                     opacity = 1,
                     title = "Distance to Forest Edge (m)",
                     group = "Distance to Forest Edge",
                     layerId = "d2fe_legend")
         
-        assign("d2fe", d2fe, envir = .GlobalEnv)
+        assign("d2fe", d2fe, envir = d2fe_env)
+        assign("pal_d2fe", pal_d2fe, envir = d2fe_env)
         
       } else {
         
-        pal_d2fe <- colorNumeric(palette = "viridis",
-                                 na.color = "transparent",
-                                 domain = d2fe$distance_to_forest_edge_3857.tif,
-                                 reverse = TRUE)
+        d2fe <- get("d2fe", envir = d2fe_env)
+        pal_d2fe <- get("pal_d2fe", envir = d2fe_env)
         
         leafletProxy("map", session) %>%
           showGroup("Distance to Forest Edge") %>%
           addLegend(position = "topleft",
                     pal = pal_d2fe,
-                    values = d2fe$distance_to_forest_edge_3857.tif,
+                    # values = d2fe$distance_to_forest_edge_3857.tif,
+                    values = 0:864,
                     opacity = 1,
                     title = "Distance to Forest Edge (m)",
                     group = "Distance to Forest Edge",
@@ -397,12 +400,13 @@ server <- function(input, output, session) {
     
     if (input$d2w == TRUE) {
       
-      if (!exists("d2w")) {
+      if (!exists("d2w", envir = d2w_env)) {
         d2w <- read_stars("data/distance_to_water_3857.tif")
         
         pal_d2w <- colorNumeric(palette = "viridis",
                                 na.color = "transparent",
-                                domain = d2w$distance_to_water_3857.tif,
+                                # domain = d2w$distance_to_water_3857.tif,
+                                domain = 0:2044,
                                 reverse = TRUE)
         leafletProxy("map", session) %>%
           addStarsImage(d2w,
@@ -411,26 +415,27 @@ server <- function(input, output, session) {
           showGroup("Distance to Water") %>%
           addLegend(position = "topleft",
                     pal = pal_d2w,
-                    values = d2w$distance_to_water_3857.tif,
+                    # values = d2w$distance_to_water_3857.tif,
+                    values = 0:2044,
                     opacity = 1,
                     title = "Distance to Water (m)",
                     group = "Distance to Water",
                     layerId = "d2w_legend")
         
-        assign("d2w", d2w, envir = .GlobalEnv)
+        assign("d2w", d2w, envir = d2w_env)
+        assign("pal_d2w", pal_d2w, envir = d2w_env)
         
       } else {
         
-        pal_d2w <- colorNumeric(palette = "viridis",
-                                na.color = "transparent",
-                                domain = d2w$distance_to_water_3857.tif,
-                                reverse = TRUE)
+        d2w <- get("d2w", envir = d2w_env)
+        pal_d2w <- get("pal_d2w", envir = d2w_env)
         
         leafletProxy("map", session) %>%
           showGroup("Distance to Water") %>%
           addLegend(position = "topleft",
                     pal = pal_d2w,
-                    values = d2w$distance_to_water_3857.tif,
+                    # values = d2w$distance_to_water_3857.tif,
+                    values = 0:2044,
                     opacity = 1,
                     title = "Distance to Water (m)",
                     group = "Distance to Water",
@@ -448,12 +453,13 @@ server <- function(input, output, session) {
     
     if (input$d2r == TRUE) {
       
-      if (!exists("d2r")) {
+      if (!exists("d2r", envir = d2r_env)) {
         d2r <- read_stars("data/distance_to_roads_3857.tif")
         
         pal_d2r <- colorNumeric(palette = "viridis",
                                 na.color = "transparent",
-                                domain = d2r$distance_to_roads_3857.tif,
+                                # domain = d2r$distance_to_roads_3857.tif,
+                                domain = 0:2140,
                                 reverse = TRUE)
         leafletProxy("map", session) %>%
           addStarsImage(d2r,
@@ -462,26 +468,27 @@ server <- function(input, output, session) {
           showGroup("Distance to Road") %>%
           addLegend(position = "topleft",
                     pal = pal_d2r,
-                    values = d2r$distance_to_roads_3857.tif,
+                    # values = d2r$distance_to_roads_3857.tif,
+                    values = 0:2140,
                     opacity = 1,
                     title = "Distance to Road (m)",
                     group = "Distance to Road",
                     layerId = "d2r_legend")
         
-        assign("d2r", d2r, envir = .GlobalEnv)
+        assign("d2r", d2r, envir = d2r_env)
+        assign("pal_d2r", pal_d2r, envir = d2r_env)
         
       } else {
         
-        pal_d2r <- colorNumeric(palette = "viridis",
-                                na.color = "transparent",
-                                domain = d2r$distance_to_roads_3857.tif,
-                                reverse = TRUE)
+        d2r <- get("d2r", envir = d2r_env)
+        pal_d2r <- get("pal_d2r", envir = d2r_env)
         
         leafletProxy("map", session) %>%
           showGroup("Distance to Road") %>%
           addLegend(position = "topleft",
                     pal = pal_d2r,
-                    values = d2r$distance_to_roads_3857.tif,
+                    # values = d2r$distance_to_roads_3857.tif,
+                    values = 0:2140,
                     opacity = 1,
                     title = "Distance to Road (m)",
                     group = "Distance to Road",
@@ -499,12 +506,13 @@ server <- function(input, output, session) {
     
     if (input$elev == TRUE) {
       
-      if (!exists("elev")) {
+      if (!exists("elev", envir = elev_env)) {
         elev <- read_stars("data/elevation_3857.tif")
         
         pal_elev <- colorNumeric(palette = "viridis",
                                  na.color = "transparent",
-                                 domain = elev$elevation_3857.tif,
+                                 # domain = elev$elevation_3857.tif,
+                                 domain = -19:636,
                                  reverse = TRUE)
         leafletProxy("map", session) %>%
           addStarsImage(elev,
@@ -513,26 +521,27 @@ server <- function(input, output, session) {
           showGroup("Elevation") %>%
           addLegend(position = "topleft",
                     pal = pal_elev,
-                    values = elev$elevation_3857.tif,
+                    # values = elev$elevation_3857.tif,
+                    values = -19:636,
                     opacity = 1,
                     title = "Elevation (m)",
                     group = "Elevation",
                     layerId = "elev_legend")
         
-        assign("elev", elev, envir = .GlobalEnv)
+        assign("elev", elev, envir = elev_env)
+        assign("pal_elev", pal_elev, envir = elev_env)
         
       } else {
         
-        pal_elev <- colorNumeric(palette = "viridis",
-                                 na.color = "transparent",
-                                 domain = elev$elevation_3857.tif,
-                                 reverse = TRUE)
+        elev <- get("elev", envir = elev_env)
+        pal_elev <- get("pal_elev", envir = elev_env)
         
         leafletProxy("map", session) %>%
           showGroup("Elevation") %>%
           addLegend(position = "topleft",
                     pal = pal_elev,
-                    values = elev$elevation_3857.tif,
+                    # values = elev$elevation_3857.tif,
+                    values = -19:636,
                     opacity = 1,
                     title = "Elevation (m)",
                     group = "Elevation",
@@ -580,4 +589,11 @@ server <- function(input, output, session) {
     
   })
   
+  # session$onSessionEnded(function() {
+  #   # stopApp()
+  #   # rm(list = setdiff(ls(envir = .GlobalEnv), lsf.str(envir = .GlobalEnv)), envir = .GlobalEnv)
+  #   # source("global.R")
+  #   rm(list = c("d2fe", "d2w", "d2r", "elev"), envir = .GlobalEnv)
+  # })
+
 }
