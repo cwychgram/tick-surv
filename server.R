@@ -79,6 +79,7 @@ server <- function(input, output, session) {
                                     style = 'font-weight: bold; text-align: left;'),
         position = "bottomleft"
       ) 
+    
   })
   
   observe({
@@ -551,6 +552,49 @@ server <- function(input, output, session) {
       leafletProxy("map", session) %>%
         hideGroup("Elevation") %>%
         removeControl(layerId = "elev_legend")
+    }
+    
+  })
+  
+  observe({
+    
+    if (input$lulc == TRUE) {
+      leafletProxy("map", session) %>%
+        addEsriImageMapLayer(
+        url = "https://cicgis.org/arcgis/rest/services/LULC/bay_lu_tif/ImageServer",
+        group = "LULC") %>%
+        addLegend(position = "topleft",
+                  colors = c("#005fe4", "#000000", "#eb0602", "#5a5a5a", "#8a8a88", 
+                             "#e9ffbe", "#ffff73", "#737300", "#267300", "#39a800", 
+                             "#623c29", "#abff00", "#ffa901", "#ffd17f", "#c73e77", 
+                             "#00a884", "#4dd194", "#baf5d9"),
+                  labels = c("Water",
+                             "Impervious Roads",
+                             "Impervious Structures",
+                             "Impervious, Other",
+                             "Tree Canopy over Impervious",
+                             "Turf Grass",
+                             "Pervious Developed, Other",
+                             "Tree Canopy over Turf Grass",
+                             "Forest",
+                             "Tree Canopy, Other",
+                             "Harvested Forest",
+                             "Natural Succession",
+                             "Cropland",
+                             "Pasture/Hay",
+                             "Extractive",
+                             "Wetlands, Tidal Non-forested",
+                             "Wetlands, Riverine Non-forested",
+                             "Wetlands, Terrene Non-forested"),
+                  title = "LULC",
+                  opacity = 0.75,
+                  group = "LULC",
+                  layerId = "lulc_legend"
+        )
+    } else {
+      leafletProxy("map", session) %>%
+        clearGroup("LULC") %>%
+        removeControl(layerId = "lulc_legend")
     }
     
   })

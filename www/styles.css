@@ -25,7 +25,6 @@ path.leaflet-interactive[stroke = "#3388ff"] {
   background-clip: padding-box;
   border-radius: 5px;
   max-width: 280px;
-  max-height: 485px;
 }
 
 .checkbox, .radio {

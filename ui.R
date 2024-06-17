@@ -29,6 +29,7 @@ ui <- fluidPage(
                 checkboxInput("d2fe", "Distance to Forest Edge", FALSE),
                 checkboxInput("d2w", "Distance to Water", FALSE),
                 checkboxInput("d2r", "Distance to Road", FALSE),
-                checkboxInput("elev", "Elevation", FALSE)
+                checkboxInput("elev", "Elevation", FALSE),
+                checkboxInput("lulc", "Land Use/Land Cover (CBP)", FALSE)
   )
 )
